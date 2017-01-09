@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>WPM Calculator</title>
+
+    <style type="text/css">
+      body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,select,p,blockquote,th,td {margin:0;padding:0}
+
+      body {
+        background-color: #2b2b2b;
+        color: #edebec;
+        font-family: 'Calibri', Sans-serif;
+        font-weight: bold;
+        text-align: center;
+        font-size: 1.8em;
+      }
+
+      .top {
+        margin-top: 1em;
+      }
+
+      .text {
+        margin-bottom: 1em;
+      }
+
+      #wpm, #timer {
+        font-size: 4em;
+      }
+
+      a {
+        display: inline-block;
+        padding: 5px 20px 5px 20px;
+        margin: 5px 10px 5px 10px;
+        text-decoration: none;
+        background-color: #7A7879;
+        color: black;
+        border-radius: 2px;
+        -webkit-border-radius: 5px;
+      }
+
+      #start {
+        margin-right: 30px;
+      }
+
+      input {
+        font-size: 1em;
+        width: 100px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="top text">Total word count <input id="totalWords" value="1500"></div>
+    
+    <div class="text">words(<span id="words"></span>) &#247; time(<span id="time"></span>) =</div>
+    
+    <div class="text">
+      <u>Words per minute</u><br>
+      <span id="wpm"></span>
+    </div>
+    
+    <div class="text">
+      <u>Time</u><br>
+      <span id="timer"></span><br>
+
+      <a href="#" id="start">start</a>
+      <a href="#" id="reset">reset</a>
+    </div>
+
+    <script type="text/javascript">
+      var clock = 0;
+      var offset = 0;
+      var interval = null;
+
+      var totalWords = document.getElementById('totalWords');
+      var startButton = document.getElementById('start');
+
+      setWords();
+      render();
+
+      // EVENT LISTENERS
+      totalWords.addEventListener('keyup', setWords);
+
+      document.getElementById('start').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (!interval) {
+          offset = Date.now();
+          interval = setInterval(update, 5);
+          startButton.innerHTML = "stop";
+        }
+        else {
+          clearInterval(interval);
+          interval = null;
+          startButton.innerHTML = "start";
+        }
+      });
+
+      document.getElementById('reset').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        clearInterval(interval);
+        interval = null;
+        startButton.innerHTML = "start";
+
+        clock = 0;
+        render();
+      });
+
+      // FUNCTIONS
+      function setWords() {
+        document.getElementById('words').innerHTML = totalWords.value;
+      }
+
+      function update() {
+        var now = Date.now();
+        d = now - offset;
+        offset = now;
+        clock += d;
+        render();
+      }
+
+      function render() {
+        var elapsedSeconds = clock / 1000;
+
+        var seconds = "" + Math.round(elapsedSeconds % 60);
+        seconds = "00".substring(0, 2 - seconds.length) + seconds; // Pad to two digits
+
+        var minutes = "" + Math.floor(elapsedSeconds / 60);
+        minutes = "0".substring(0, 1 - minutes.length) + minutes; // Pad to one digit
+
+        document.getElementById('timer').innerHTML = minutes + ":" + seconds;
+
+        var percentMinutes = (elapsedSeconds / 60).toFixed(2);
+        var calculatedWPM = Number(totalWords.value) / percentMinutes; // Only update the WPM when percentMinutes changes
+
+        if (isNaN(calculatedWPM) || isFinite(calculatedWPM) == false) {
+          calculatedWPM = 0;
+        }
+
+        document.getElementById('time').innerHTML = percentMinutes;
+        document.getElementById('wpm').innerHTML = calculatedWPM.toFixed();
+      }
+    </script>
+  </body>
+</html>
